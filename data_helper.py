@@ -4,11 +4,12 @@ import torch.nn.functional as F
 import json
 import numpy as np
 from lca import Tree
+import matplotlib.pyplot as plt
 
 
 class SRLDataSet(Dataset):
     def __init__(self, filepath, word_dict_path, pos_dict_path, label_dict_path, depend_dict_path, tree_path,
-                 max_len=250, max_depend_len=20, is_test=False):
+                 max_len=250, max_depend_len=30, is_test=False):
         _word_set = json.load(open(word_dict_path)).keys()
         self.word2idx = {w: i + 1 for i, w in enumerate(_word_set)}
         self.word2idx[u'<UNK>'] = 0
@@ -27,6 +28,8 @@ class SRLDataSet(Dataset):
         self.trees = []
         for lineno, line in enumerate(open(filepath, 'r', encoding='utf8')):
             tokens = line.strip().split()
+            if len(tokens)==0:
+                continue
             for token in tokens[:self.max_len]:
                 v = token.split('/')
                 if not self.is_test:
@@ -71,9 +74,9 @@ class SRLDataSet(Dataset):
         rel_depend_path = []
         path_len = []
         rel_path_len = []
-        for i in range(1, tree.size):
+        print(index)
+        for i in range( tree.size):
             tmp = tree.cal_lca(i)
-            print(tmp)
             path_len.append(len(tmp[0]))
             rel_path_len.append(len(tmp[1]))
             token_path.append(
