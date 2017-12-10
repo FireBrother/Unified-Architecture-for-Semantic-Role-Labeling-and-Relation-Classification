@@ -74,8 +74,7 @@ class SRLDataSet(Dataset):
         rel_depend_path = []
         path_len = []
         rel_path_len = []
-        print(index)
-        for i in range( tree.size):
+        for i in range(tree.size):
             tmp = tree.cal_lca(i)
             path_len.append(len(tmp[0]))
             rel_path_len.append(len(tmp[1]))
