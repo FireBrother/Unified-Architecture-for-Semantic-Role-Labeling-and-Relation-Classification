@@ -79,12 +79,12 @@ class SRLDataSet(Dataset):
             path_len.append(len(tmp[0]))
             rel_path_len.append(len(tmp[1]))
             token_path.append(
-                np.pad(list(map(lambda x: word_seq[x], tmp[0])), (0, self.max_depend_len - len(tmp[0])), 'constant'))
+                np.pad(tmp[0], (0, self.max_depend_len - len(tmp[0])), 'constant'))
             depend_path.append(
                 np.pad(list(map(lambda x: self.depend2idx[x], tmp[1])), (0, self.max_depend_len - len(tmp[1])),
                        'constant'))
             rel_token_path.append(
-                np.pad(list(map(lambda x: word_seq[x], tmp[2])), (0, self.max_depend_len - len(tmp[2])), 'constant'))
+                np.pad(tmp[2], (0, self.max_depend_len - len(tmp[2])), 'constant'))
             rel_depend_path.append(
                 np.pad(list(map(lambda x: self.depend2idx[x], tmp[3])), (0, self.max_depend_len - len(tmp[3])),
                        'constant'))
