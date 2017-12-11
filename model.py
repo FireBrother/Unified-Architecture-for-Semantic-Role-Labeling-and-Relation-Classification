@@ -1,4 +1,3 @@
-import IPython
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -38,8 +37,8 @@ class UnifiedFramework(nn.Module):
         self.path_repr_weight = nn.Linear(config['gpr_hidden_size'] * 2 + config['rpr_hidden_size'] * 2,
                                           config['feature_size'])
         self.output = nn.Sequential(
-            nn.Softmax(),
-            nn.Linear(config['feature_size'], config['categories'])
+            nn.Linear(config['feature_size'], config['categories']),
+            nn.Softmax(dim=-1)
         )
 
     def forward(self, word_seq, pos_seq, rel_pos, sent_len, token_index_path, depend_path,
@@ -160,7 +159,6 @@ class UnifiedFramework(nn.Module):
         restored_gcr = restored_gcr.view(len(sent_len), -1, gcr.size(2))
         restored_gcr[:, :gcr.size(1), :] = gcr
 
-        IPython.embed()
         p = F.relu(self.context_repr_weight(restored_gcr)+self.path_repr_weight(restored_spr))
         pcp = self.output(p)
 

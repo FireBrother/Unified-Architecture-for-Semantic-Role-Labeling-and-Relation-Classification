@@ -10,16 +10,16 @@ import matplotlib.pyplot as plt
 class SRLDataSet(Dataset):
     def __init__(self, filepath, word_dict_path, pos_dict_path, label_dict_path, depend_dict_path, tree_path,
                  max_len=250, max_depend_len=250, is_test=False):
-        _word_set = json.load(open(word_dict_path)).keys()
+        _word_set = sorted(json.load(open(word_dict_path)).keys())
         self.word2idx = {w: i + 1 for i, w in enumerate(_word_set)}
         self.word2idx[u'<UNK>'] = 0
-        _pos_set = json.load(open(pos_dict_path)).keys()
+        _pos_set = sorted(json.load(open(pos_dict_path)).keys())
         self.pos2idx = {w: i + 1 for i, w in enumerate(_pos_set)}
         self.pos2idx[u'<UNK>'] = 0
-        _depend_set = json.load(open(depend_dict_path)).keys()
+        _depend_set = sorted(json.load(open(depend_dict_path)).keys())
         self.depend2idx = {w: i + 1 for i, w in enumerate(_depend_set)}
         self.depend2idx[u'<UNK>'] = 0
-        _label_set = json.load(open(label_dict_path)).keys()
+        _label_set = sorted(json.load(open(label_dict_path)).keys())
         self.label2idx = {w: i for i, w in enumerate(_label_set)}
         self.is_test = is_test
         self.max_len = max_len
