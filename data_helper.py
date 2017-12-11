@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 class SRLDataSet(Dataset):
     def __init__(self, filepath, word_dict_path, pos_dict_path, label_dict_path, depend_dict_path, tree_path,
-                 max_len=250, max_depend_len=30, is_test=False):
+                 max_len=250, max_depend_len=250, is_test=False):
         _word_set = json.load(open(word_dict_path)).keys()
         self.word2idx = {w: i + 1 for i, w in enumerate(_word_set)}
         self.word2idx[u'<UNK>'] = 0
@@ -68,9 +68,9 @@ class SRLDataSet(Dataset):
         pos_seq = np.pad(pos_seq, (0, self.max_len - len(pos_seq)), 'constant')
         assert rel_pos != -1, 'No REL label found at line:{}-{}.\nMaybe max_len is too small.'.format(index, tokens)
         tree = Tree(node_list, rel_pos)
-        token_path = []
+        token_index_path = []
         depend_path = []
-        rel_token_path = []
+        rel_token_index_path = []
         rel_depend_path = []
         path_len = []
         rel_path_len = []
@@ -78,25 +78,25 @@ class SRLDataSet(Dataset):
             tmp = tree.cal_lca(i)
             path_len.append(len(tmp[0]))
             rel_path_len.append(len(tmp[1]))
-            token_path.append(
+            token_index_path.append(
                 np.pad(tmp[0], (0, self.max_depend_len - len(tmp[0])), 'constant'))
             depend_path.append(
                 np.pad(list(map(lambda x: self.depend2idx[x], tmp[1])), (0, self.max_depend_len - len(tmp[1])),
                        'constant'))
-            rel_token_path.append(
+            rel_token_index_path.append(
                 np.pad(tmp[2], (0, self.max_depend_len - len(tmp[2])), 'constant'))
             rel_depend_path.append(
                 np.pad(list(map(lambda x: self.depend2idx[x], tmp[3])), (0, self.max_depend_len - len(tmp[3])),
                        'constant'))
         path_len = np.pad(path_len, (0, self.max_len - len(path_len)), 'constant')
         rel_path_len = np.pad(rel_path_len, (0, self.max_len - len(rel_path_len)), 'constant')
-        token_path = np.pad(token_path, ((0, self.max_len - len(token_path)), (0, 0)), 'constant')
+        token_index_path = np.pad(token_index_path, ((0, self.max_len - len(token_index_path)), (0, 0)), 'constant')
         depend_path = np.pad(depend_path, ((0, self.max_len - len(depend_path)), (0, 0)), 'constant')
-        rel_token_path = np.pad(rel_token_path, ((0, self.max_len - len(rel_token_path)), (0, 0)), 'constant')
+        rel_token_index_path = np.pad(rel_token_index_path, ((0, self.max_len - len(rel_token_index_path)), (0, 0)), 'constant')
         rel_depend_path = np.pad(rel_depend_path, ((0, self.max_len - len(rel_depend_path)), (0, 0)), 'constant')
         ret = {'word_seq': word_seq, 'pos_seq': pos_seq, 'rel_pos': rel_pos, 'sent_len': sent_len,
-               'token_path': token_path, 'depend_path': depend_path,
-               'rel_token_path': rel_token_path, 'rel_depend_path': rel_depend_path,
+               'token_index_path': token_index_path, 'depend_path': depend_path,
+               'rel_token_index_path': rel_token_index_path, 'rel_depend_path': rel_depend_path,
                'path_len': path_len, 'rel_path_len': rel_path_len
                }
         if not self.is_test:
