@@ -21,16 +21,16 @@ devset = SRLDataSet('SRL_data/data/cpbdev.txt', 'SRL_data/data/word_dict.json', 
 devloader = DataLoader(dataset=devset, batch_size=16)
 config = {
     'vocab_size': max(trainloader.dataset.word2idx.values()) + 1,
-    'embedding_dim': 5,
+    'embedding_dim': 100,
     'pos_set_size': max(trainloader.dataset.pos2idx.values()) + 1,
     'depend_set_size': max(trainloader.dataset.depend2idx.values()) + 1,
-    'gcr_hidden_size': 20,
-    'gcr_num_layers': 1,
-    'gpr_hidden_size': 20,
-    'gpr_num_layers': 1,
-    'rpr_hidden_size': 20,
-    'rpr_num_layers': 1,
-    'feature_size': 6,
+    'gcr_hidden_size': 200,
+    'gcr_num_layers': 5,
+    'gpr_hidden_size': 200,
+    'gpr_num_layers': 5,
+    'rpr_hidden_size': 200,
+    'rpr_num_layers': 5,
+    'feature_size': 200,
     'drop_out': 0.1,
     'categories': max(trainloader.dataset.label2idx.values()) + 1
 }
@@ -52,7 +52,6 @@ def train(dataloader):
     uf.train()
     total_loss = 0
     total_items = 0
-    uf.init_weights()
     start_time = time.time()
     for i_batch, batch in enumerate(dataloader):
         output_seq = Variable(batch['output_seq'])
@@ -110,6 +109,8 @@ def evaluate(dataloader):
 
 best_val_loss = 1000
 try:
+    print(uf)
+    uf.init_weights()
     for epoch in range(1, epochs + 1):
         # scheduler.step()
         epoch_start_time = time.time()
