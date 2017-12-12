@@ -37,10 +37,7 @@ class UnifiedFramework(nn.Module):
         self.context_repr_weight = nn.Linear(config['gcr_hidden_size'] * 4, config['feature_size'])
         self.path_repr_weight = nn.Linear(config['gpr_hidden_size'] * 2 + config['rpr_hidden_size'] * 2,
                                           config['feature_size'])
-        self.output = nn.Sequential(
-            nn.Linear(config['feature_size'], config['categories']),
-            nn.Softmax(dim=-1)
-        )
+        self.output = nn.Linear(config['feature_size'], config['categories'])
 
     def forward(self, word_seq, pos_seq, rel_pos, sent_len, token_index_path, depend_path,
                 rel_token_index_path, rel_depend_path, path_len, rel_path_len):

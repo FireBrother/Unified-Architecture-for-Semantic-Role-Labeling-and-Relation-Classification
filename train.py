@@ -31,7 +31,7 @@ config = {
     'rpr_hidden_size': 200,
     'rpr_num_layers': 5,
     'feature_size': 200,
-    'drop_out': 0.1,
+    'drop_out': 0.3,
     'categories': max(trainloader.dataset.label2idx.values()) + 1
 }
 
@@ -44,7 +44,7 @@ if DEVICE_NO != -1:
 optimizer = torch.optim.Adagrad(uf.parameters(), lr=0.01)
 criteria = nn.CrossEntropyLoss(ignore_index=0)
 
-log_interval = 10
+log_interval = 20
 epochs = 10
 
 
