@@ -1,3 +1,4 @@
+import IPython
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -58,7 +59,7 @@ class UnifiedFramework(nn.Module):
 
         # Global Context Representation
         word_lex_repr = self.word_repr(word_seq, pos_seq)
-        packed_word_lex_repr = pack_padded_sequence(word_lex_repr, sent_len.data.numpy(), batch_first=True)
+        packed_word_lex_repr = pack_padded_sequence(word_lex_repr, sent_len.cpu().data.numpy(), batch_first=True)
         hidden = self.init_hidden(len(sent_len), self.config['gcr_num_layers'] * 2, self.config['gcr_hidden_size'])
         packed_gcr, hidden = self.global_context_repr(packed_word_lex_repr, hidden)
         gcr, _ = pad_packed_sequence(packed_gcr, batch_first=True)
@@ -110,13 +111,13 @@ class UnifiedFramework(nn.Module):
         rel_token_path_embedding = self.word_repr(rel_token_path, rel_pos_path)
         rel_depend_path_embedding = self.depend_embedding(rel_depend_path)
 
-        packed_token_path_embedding = pack_padded_sequence(token_path_embedding, path_len.data.numpy(),
+        packed_token_path_embedding = pack_padded_sequence(token_path_embedding, path_len.cpu().data.numpy(),
                                                            batch_first=True)
-        packed_depend_path_embedding = pack_padded_sequence(depend_path_embedding, path_len.data.numpy(),
+        packed_depend_path_embedding = pack_padded_sequence(depend_path_embedding, path_len.cpu().data.numpy(),
                                                             batch_first=True)
-        packed_rel_token_path_embedding = pack_padded_sequence(rel_token_path_embedding, rel_path_len.data.numpy(),
+        packed_rel_token_path_embedding = pack_padded_sequence(rel_token_path_embedding, rel_path_len.cpu().data.numpy(),
                                                                batch_first=True)
-        packed_rel_depend_path_embedding = pack_padded_sequence(rel_depend_path_embedding, rel_path_len.data.numpy(),
+        packed_rel_depend_path_embedding = pack_padded_sequence(rel_depend_path_embedding, rel_path_len.cpu().data.numpy(),
                                                                 batch_first=True)
 
         hidden = self.init_hidden(num_all_paths, self.config['gpr_num_layers'], self.config['gpr_hidden_size'])
@@ -144,7 +145,7 @@ class UnifiedFramework(nn.Module):
         spr = torch.cat([gpr, rpr], dim=-1)
 
         # restore the order and shape of spr
-        restored_spr = Variable(torch.zeros(former_len, spr.size(1)))
+        restored_spr = Variable(spr.data.new(former_len, spr.size(1)).zero_())
         restored_spr[:spr.size(0), :] = spr
         restored_spr = restored_spr.index_select(0, path_len_unsort_idx)
         restored_spr = restored_spr.view(len(sent_len), -1, spr.size(1))
@@ -155,7 +156,7 @@ class UnifiedFramework(nn.Module):
         gcr_e2 = gcr[range(0, gcr.size(0)), rel_pos, :].unsqueeze(1).expand_as(gcr)
         gcr = torch.cat([gcr, gcr_e2], dim=-1)
 
-        restored_gcr = Variable(torch.zeros(former_len, gcr.size(2)))
+        restored_gcr = Variable(gcr.data.new(former_len, gcr.size(2)).zero_())
         restored_gcr = restored_gcr.view(len(sent_len), -1, gcr.size(2))
         restored_gcr[:, :gcr.size(1), :] = gcr
 
