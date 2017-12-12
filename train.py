@@ -69,8 +69,9 @@ def train(dataloader):
         output_seq = output_seq.view(-1)
         loss = criteria(pred, output_seq)
         loss.backward()
-        total_loss += len(output_seq) * loss.data
-        total_items += len(output_seq)
+        num_items = len([x for x in output_seq if int(x) != criteria.ignore_index])
+        total_loss += num_items * loss.data
+        total_items += num_items
         optimizer.step()
 
         if i_batch % log_interval == 0 and i_batch > 0:
@@ -81,11 +82,13 @@ def train(dataloader):
                 epoch, i_batch, len(dataloader.dataset) // dataloader.batch_size, optimizer.param_groups[0]['lr'],
                                 elapsed * 1000 / log_interval, cur_loss, math.exp(cur_loss)))
             total_loss = 0
+            total_items = 0
             start_time = time.time()
 
 
 def evaluate(dataloader):
     total_loss = 0
+    total_items = 0
     for batch in dataloader:
         output_seq = Variable(batch['output_seq'])
         del (batch['output_seq'])
@@ -98,9 +101,11 @@ def evaluate(dataloader):
         pred = uf.forward(**batch)
         pred = pred.view(-1, pred.size(-1))
         output_seq = output_seq.view(-1)
-        total_loss += len(list(batch.values())[0]) * criteria(pred, output_seq).data
+        num_items = len([x for x in output_seq if int(x) != criteria.ignore_index])
+        total_loss += num_items * criteria(pred, output_seq).data
+        total_items += num_items
 
-    return total_loss[0] / len(dataloader.dataset)
+    return total_loss[0] / total_items
 
 
 best_val_loss = 1000
