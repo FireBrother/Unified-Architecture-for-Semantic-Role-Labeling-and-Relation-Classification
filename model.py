@@ -171,6 +171,8 @@ class UnifiedFramework(nn.Module):
                 Variable(weight.new(num_layers, batch_size, hidden_size).zero_()))
 
     def init_weights(self, init_range=0.1):
+        # TODO: use pre-trained_word_embedding
+        self.pretrained_word_embedding.weight.data.uniform_(-init_range, init_range)
         self.untrained_word_embedding.weight.data.uniform_(-init_range, init_range)
         self.pos_embedding.weight.data.uniform_(-init_range, init_range)
         self.depend_embedding.weight.data.uniform_(-init_range, init_range)
