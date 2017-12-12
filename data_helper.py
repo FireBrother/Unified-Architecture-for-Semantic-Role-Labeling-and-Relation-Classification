@@ -20,7 +20,8 @@ class SRLDataSet(Dataset):
         self.depend2idx = {w: i + 1 for i, w in enumerate(_depend_set)}
         self.depend2idx[u'<UNK>'] = 0
         _label_set = sorted(json.load(open(label_dict_path)).keys())
-        self.label2idx = {w: i for i, w in enumerate(_label_set)}
+        self.label2idx = {w: i + 1 for i, w in enumerate(_label_set)}
+        self.label2idx[u'<UNK>'] = 0
         self.is_test = is_test
         self.max_len = max_len
         self.max_depend_len = max_depend_len

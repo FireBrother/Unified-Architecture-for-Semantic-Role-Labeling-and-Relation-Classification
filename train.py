@@ -52,6 +52,7 @@ def train(dataloader):
     uf.train()
     total_loss = 0
     total_items = 0
+    uf.init_weights()
     start_time = time.time()
     for i_batch, batch in enumerate(dataloader):
         output_seq = Variable(batch['output_seq'])
@@ -62,6 +63,7 @@ def train(dataloader):
             output_seq = output_seq.cuda(DEVICE_NO)
             for k in batch:
                 batch[k] = batch[k].cuda(DEVICE_NO)
+        uf.zero_grad()
         pred = uf.forward(**batch)
         pred = pred.view(-1, pred.size(-1))
         output_seq = output_seq.view(-1)
