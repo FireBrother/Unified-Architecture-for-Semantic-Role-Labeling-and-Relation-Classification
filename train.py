@@ -21,15 +21,17 @@ devset = SRLDataSet('SRL_data/data/cpbdev.txt', 'SRL_data/data/word_dict.json', 
 devloader = DataLoader(dataset=devset, batch_size=16)
 config = {
     'vocab_size': max(trainloader.dataset.word2idx.values()) + 1,
-    'embedding_dim': 100,
+    'word_embedding_dim': 100,
+    'pos_embedding_dim': 25,
+    'depend_embedding_dim': 25,
     'pos_set_size': max(trainloader.dataset.pos2idx.values()) + 1,
     'depend_set_size': max(trainloader.dataset.depend2idx.values()) + 1,
-    'gcr_hidden_size': 200,
-    'gcr_num_layers': 5,
-    'gpr_hidden_size': 200,
-    'gpr_num_layers': 5,
-    'rpr_hidden_size': 200,
-    'rpr_num_layers': 5,
+    'gcr_hidden_size': 100,
+    'gcr_num_layers': 2,
+    'gpr_hidden_size': 100,
+    'gpr_num_layers': 2,
+    'rpr_hidden_size': 100,
+    'rpr_num_layers': 2,
     'feature_size': 200,
     'drop_out': 0.3,
     'categories': max(trainloader.dataset.label2idx.values()) + 1
@@ -44,8 +46,8 @@ if DEVICE_NO != -1:
 optimizer = torch.optim.Adagrad(uf.parameters(), lr=0.01)
 criteria = nn.CrossEntropyLoss(ignore_index=0)
 
-log_interval = 20
-epochs = 10
+log_interval = 50
+epochs = 20
 
 
 def train(dataloader):
