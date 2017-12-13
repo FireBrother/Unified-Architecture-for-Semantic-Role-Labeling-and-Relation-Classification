@@ -4,7 +4,6 @@ import torch.nn.functional as F
 import json
 import numpy as np
 from lca import Tree
-import matplotlib.pyplot as plt
 
 
 class SRLDataSet(Dataset):
@@ -20,8 +19,15 @@ class SRLDataSet(Dataset):
         self.depend2idx = {w: i + 1 for i, w in enumerate(_depend_set)}
         self.depend2idx[u'<UNK>'] = 0
         _label_set = sorted(json.load(open(label_dict_path)).keys())
-        self.label2idx = {w: i + 1 for i, w in enumerate(_label_set)}
+        label_set = set()
+        for label in _label_set:
+            if len(label.split('-'))>1:
+                label = '-'.join(label.split('-')[1:])
+            label_set.add(label)
+
+        self.label2idx = {w: i + 1 for i, w in enumerate(sorted(label_set))}
         self.label2idx[u'<UNK>'] = 0
+
         self.is_test = is_test
         self.max_len = max_len
         self.max_depend_len = max_depend_len
@@ -59,7 +65,11 @@ class SRLDataSet(Dataset):
             word_seq.append(self.word2idx.get(v[0], 0))
             pos_seq.append(self.pos2idx.get(v[1], 0))
             if not self.is_test:
-                output_seq.append(self.label2idx.get(v[2], 0))
+                label = v[2]
+                if len(label.split('-')) > 1:
+                    label = '-'.join(label.split('-')[1:])
+
+                output_seq.append(self.label2idx.get(label, 0))
             if len(v) == 3 and v[2] == 'rel':
                 rel_pos = i
         sent_len = len(word_seq)
