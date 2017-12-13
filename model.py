@@ -168,11 +168,13 @@ class UnifiedFramework(nn.Module):
                 Variable(weight.new(num_layers, batch_size, hidden_size).zero_()))
 
     def init_weights(self, init_range=0.1, pre_trained_filename=None):
-        # TODO: use pre-trained_word_embedding
         if pre_trained_filename:
+            print('Using pre-trained embedding from {}'.format(pre_trained_filename))
             weights = torch.from_numpy(np.load(pre_trained_filename)).type(torch.FloatTensor)
             self.pretrained_word_embedding.weight.data.copy_(weights)
             self.pretrained_word_embedding.weight.requires_grad = False
+        else:
+            self.pretrained_word_embedding.weight.data.uniform_(-init_range, init_range)
         self.untrained_word_embedding.weight.data.uniform_(-init_range, init_range)
         self.pos_embedding.weight.data.uniform_(-init_range, init_range)
         self.depend_embedding.weight.data.uniform_(-init_range, init_range)

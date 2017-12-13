@@ -23,6 +23,8 @@ idx2label = {v: k for k, v in testloader.dataset.label2idx.items()}
 idx2word = {v: k for k, v in testloader.dataset.word2idx.items()}
 idx2pos = {v: k for k, v in testloader.dataset.pos2idx.items()}
 
+PROB_THRESH = 0.3
+
 with open('model.pkl', 'rb') as f:
     uf = torch.load(f)
 
@@ -48,7 +50,8 @@ def sample(dataloader):
             for j in range(int(batch['sent_len'][i])):
                 word = idx2word[int(batch['word_seq'][i, int(j)])]
                 l_true = idx2label[int(output_seq[i, int(j)])]
-                l = idx2label[int(label[i, int(j)])]
+                p = float(prob[i, int(j)])
+                l = idx2label[int(label[i, int(j)])] if p > PROB_THRESH else 'O'
                 print('{}/{}/{}'.format(word, l_true, l), end=' ')
             print('')
         input('input to continue:')
@@ -70,10 +73,11 @@ def test(dataloader, out=sys.stdout):
             for j in range(int(batch['sent_len'][i])):
                 word = idx2word[int(batch['word_seq'][i, int(j)])]
                 pos = idx2pos[int(batch['pos_seq'][i, int(j)])]
-                l = idx2label[int(label[i, int(j)])]
+                p = float(prob[i, int(j)])
+                l = idx2label[int(label[i, int(j)])] if p > PROB_THRESH else 'O'
                 out.write('{}/{}/{} '.format(word, pos, l))
             out.write('\n')
 
 
-# sample(devloader)
-test(testloader, out=open('test_output.txt', 'w'))
+sample(devloader)
+# test(testloader, out=open('test_output.txt', 'w'))
