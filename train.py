@@ -110,7 +110,7 @@ def evaluate(dataloader):
 best_val_loss = 1000
 try:
     print(uf)
-    uf.init_weights()
+    uf.init_weights(pre_trained_filename='xinhuashe/weights.pkl.npy')
     for epoch in range(1, epochs + 1):
         # scheduler.step()
         epoch_start_time = time.time()
