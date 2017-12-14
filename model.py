@@ -1,4 +1,4 @@
-import IPython
+#import IPython
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -21,6 +21,9 @@ class UnifiedFramework(nn.Module):
         self.global_context_repr = nn.LSTM(config['feature_size'], config['gcr_hidden_size'],
                                            config['gcr_num_layers'], bidirectional=True, batch_first=True,
                                            dropout=config['drop_out'])
+        self.output_lstm = nn.LSTM(config['feature_size'],config['feature_size'],
+                                   config['gcr_num_layers'], bidirectional=True, batch_first=True,
+                                           dropout=config['drop_out'])
         self.generic_path_repr_forward = nn.LSTM(config['feature_size'], config['gpr_hidden_size'],
                                                  config['gpr_num_layers'], bidirectional=False, batch_first=True,
                                                  dropout=config['drop_out'])
@@ -38,7 +41,7 @@ class UnifiedFramework(nn.Module):
         self.context_repr_weight = nn.Linear(config['gcr_hidden_size'] * 4, config['feature_size'])
         self.path_repr_weight = nn.Linear(config['gpr_hidden_size'] * 2 + config['rpr_hidden_size'] * 2,
                                           config['feature_size'])
-        self.output = nn.Linear(config['feature_size'], config['categories'])
+        self.output = nn.Linear(config['feature_size']*2, config['categories'])
 
     def forward(self, word_seq, pos_seq, rel_pos, sent_len, token_index_path, depend_path,
                 rel_token_index_path, rel_depend_path, path_len, rel_path_len):
@@ -57,6 +60,7 @@ class UnifiedFramework(nn.Module):
 
         # Global Context Representation
         word_lex_repr = self.word_repr(word_seq, pos_seq)
+        #print(word_lex_repr.size())
         packed_word_lex_repr = pack_padded_sequence(word_lex_repr, sent_len.cpu().data.numpy(), batch_first=True)
         hidden = self.init_hidden(len(sent_len), self.config['gcr_num_layers'] * 2, self.config['gcr_hidden_size'])
         packed_gcr, hidden = self.global_context_repr(packed_word_lex_repr, hidden)
@@ -157,11 +161,19 @@ class UnifiedFramework(nn.Module):
         restored_gcr = Variable(gcr.data.new(former_len, gcr.size(2)).zero_())
         restored_gcr = restored_gcr.view(len(sent_len), -1, gcr.size(2))
         restored_gcr[:, :gcr.size(1), :] = gcr
-
         p = F.relu(self.context_repr_weight(restored_gcr)+self.path_repr_weight(restored_spr))
+        p = p.index_select(0,sent_len_sort_idx)
+        p = pack_padded_sequence(p, sent_len.cpu().data.numpy(), batch_first=True)
+        hidden = self.init_hidden(len(sent_len), self.config['gcr_num_layers'] *2 ,config['feature_size'])
+        packed_p, hidden = self.output_lstm(p, hidden)
+        p, _ = pad_packed_sequence(packed_p, batch_first=True)
         pcp = self.output(p)
 
-        return pcp
+        pcp = pcp.index_select(0,sent_len_unsort_idx)
+        restored_pcp = Variable(pcp.data.new(former_len, pcp.size(2)).zero_())
+        restored_pcp = restored_pcp.view(len(sent_len), -1, pcp.size(2))
+        restored_pcp[:, :pcp.size(1), :] = pcp
+        return restored_pcp
 
     def init_hidden(self, batch_size, num_layers, hidden_size):
         weight = next(self.parameters()).data
@@ -199,7 +211,9 @@ if __name__ == '__main__':
     dataloader = DataLoader(dataset=dataset, batch_size=10)
     config = {
         'vocab_size': max(dataloader.dataset.word2idx.values()) + 1,
-        'embedding_dim': 5,
+        'word_embedding_dim': 10,
+        'pos_embedding_dim': 2,
+        'depend_embedding_dim': 2,
         'pos_set_size': max(dataloader.dataset.pos2idx.values()) + 1,
         'depend_set_size': max(dataloader.dataset.depend2idx.values()) + 1,
         'gcr_hidden_size': 20,
@@ -208,7 +222,7 @@ if __name__ == '__main__':
         'gpr_num_layers': 1,
         'rpr_hidden_size': 20,
         'rpr_num_layers': 1,
-        'feature_size': 6,
+        'feature_size': 20,
         'drop_out': 0.1,
         'categories': len(dataloader.dataset.label2idx)
     }
