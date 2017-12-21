@@ -187,10 +187,10 @@ class UnifiedFramework(nn.Module):
             self.pretrained_word_embedding.weight.data.copy_(weights)
             self.pretrained_word_embedding.weight.requires_grad = False
         else:
-            self.pretrained_word_embedding.weight.data.uniform_(-init_range, init_range)
-        self.untrained_word_embedding.weight.data.uniform_(-init_range, init_range)
-        self.pos_embedding.weight.data.uniform_(-init_range, init_range)
-        self.depend_embedding.weight.data.uniform_(-init_range, init_range)
+            self.pretrained_word_embedding.weight.data.normal_()
+        self.untrained_word_embedding.weight.data.normal_()
+        self.pos_embedding.weight.data.normal_()
+        self.depend_embedding.weight.data.normal_()
 
     def word_repr(self, token_seq, pos_seq):
         pretrained = self.pretrained_word_embedding(token_seq)
